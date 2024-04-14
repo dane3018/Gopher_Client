@@ -6,6 +6,7 @@ from datetime import datetime
 def send_request(sock, req):
     txt = req+'\r\n'
     sock.sendall(txt.encode('utf-8'))
+    log_request(req)
 
 def read_response(sock):
     """Read single line terminated by \r\n from sock, or None if closed."""
