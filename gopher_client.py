@@ -2,6 +2,7 @@
 from socket import *
 from util_functions import send_request, read_response, get_resources
 from gopher_crawler import GopherCrawler
+import os
 
 
 
@@ -14,7 +15,17 @@ def main():
     portno = 70
     
     crawler = GopherCrawler(hostname=host_name, portno=portno)
+    # ensure ouput directories exist
+    base_dir = 'output'
+    os.makedirs(base_dir, exist_ok=True)
 
+    # Create the 'output/text' directory
+    text_dir = os.path.join(base_dir, "text")
+    os.makedirs(text_dir, exist_ok=True)
+
+    # Create the 'output/bin' directory
+    bin_dir = os.path.join(base_dir, "bin")
+    os.makedirs(bin_dir, exist_ok=True)
     try:
         # Connect to the server
         
@@ -27,12 +38,7 @@ def main():
 
         # resources will be a list of dictionaries
         resources = get_resources(response)
-        print(resources)
 
-        # sock = send_request( "/rfc1436.txt")
-        # response = read_response(sock, False)
-        # print(response)
-        
         for res in resources:
             crawler.crawl_resource(res)
         crawler.print_stats()

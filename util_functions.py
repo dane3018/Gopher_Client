@@ -2,13 +2,16 @@ from datetime import datetime
 import socket
 from socket import *
 import time
+import os
+
+timeout_value = 5 #change timout of sock operations here
 
 
 # Sock Line functions 
 
 def send_request(req, host_name, portno):
     sock = socket(AF_INET, SOCK_STREAM)
-    sock.settimeout(5)
+    sock.settimeout(timeout_value)
     sock.connect((host_name, portno))
     txt = req+'\r\n'
     sock.sendall(txt.encode('utf-8'))
@@ -24,7 +27,7 @@ def read_response(sock, is_binary):
     
     """
     # Read as bytes. Only convert to UTF-8 when we have entire line.
-    sock.settimeout(5)
+    sock.settimeout(timeout_value)
     start_time = time.time()
     try:
         in_data = b''
@@ -42,8 +45,8 @@ def read_response(sock, is_binary):
             if not is_binary and ch.endswith(b'\r\n.\r\n'):
                 break
             # if receiving data for longer than 5 seconds
-            if time.time() - start_time > 5:
-                print('timeout')
+            if time.time() - start_time > timeout_value:
+                print('Reached timeout value when receiving data')
                 sock.close()
                 return None
         sock.close()
@@ -52,9 +55,20 @@ def read_response(sock, is_binary):
         txt = in_data.decode('utf-8', 'backslashreplace')
         return remove_terminator(txt)
     except Exception as e:
-        print("timeout:", e)
+        if e == timeout:
+            print("Socket operation timed out")
         sock.close()
         return None
+    
+def write_file(path, content, is_binary):
+    try:
+        flag = 'wb+' if is_binary else 'w+'
+        with open(path, flag) as file:
+            file.write(content)
+            file.close()
+    except Exception as e:
+        print("Unable to write to file:", path, e)
+
     
 def remove_terminator(txt):
     # edge case where .txt file is empty no leading new line

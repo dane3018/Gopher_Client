@@ -2,7 +2,8 @@
 Class to store all fields associated with the assignment specs
 and methods to update these values
 """
-from util_functions import send_request, read_response, get_resources, check_external_server
+from util_functions import send_request, read_response, get_resources, check_external_server, write_file
+import os
 
 
 class GopherCrawler:
@@ -28,8 +29,8 @@ class GopherCrawler:
         """
         Note Generated partly by ChatGPT. Used to print all items of the class to stdout 
         """
-        print("Number of directories found")
-        print("\n".join(self.visited_dirs))
+        print("Number of directories found:")
+        print(len(self.visited_dirs))
 
         print("\nText files found:")
         print("\n".join(self.text_files))
@@ -93,6 +94,12 @@ class GopherCrawler:
         # txt file 
         if res_type == '0':
             self.text_files.append(selector)
+            trim_selector = selector[:30] if len(selector) > 30 else selector
+            basename = os.path.basename(trim_selector)
+            if not basename.endswith('.txt'):
+                basename += '.txt'
+            path = os.path.join('output', 'text', basename)
+            write_file(path, response, False)
             # Update smallest text file 
             if not self.smallest_text_file_contents or len(response) < len(self.smallest_text_file_contents):
                 self.smallest_text_file_contents = response
@@ -112,9 +119,13 @@ class GopherCrawler:
             # recursively crawl every resource in directory
             for resource in response_resources:
                 self.crawl_resource(resource)
+            
         # binary file case
         elif res_type == '9':
             self.binary_files.append(selector)
+            basename = os.path.basename(selector)
+            path = os.path.join('output', 'bin', basename)
+            write_file(path, response, True)
             if self.largest_binary_file_size == None:
                 self.largest_binary_file_size = len(response)
             if self.smallest_binary_file_size == None:
