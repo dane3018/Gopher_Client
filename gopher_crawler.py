@@ -14,12 +14,12 @@ class GopherCrawler:
         self.text_files = []
         self.binary_files = []
         self.smallest_text_file_contents = None
-        self.largest_text_file_size = 0
+        self.largest_text_file_size = None
         self.smallest_binary_file_size = None
         self.largest_binary_file_size = None
-        self.num_invalid_references = 0
+        self.invalid_references = set() # Set
         self.external_servers = {}  # {(host, port) : up_status}
-        self.error_references = []
+        self.error_references = [] # (reference, error)
 
         self.visited_dirs = [] # keep track of which directories have been visited 
 
@@ -29,29 +29,29 @@ class GopherCrawler:
         """
         Note Generated partly by ChatGPT. Used to print all items of the class to stdout 
         """
-        print("Number of directories found:")
-        print(len(self.visited_dirs))
+        print("\nNumber of directories found:", len(self.visited_dirs))
+        print(self.visited_dirs)
 
-        print("\nText files found:")
+        print("\nText files found:", len(self.text_files))
         print("\n".join(self.text_files))
         
-        print("\nBinary files found:")
+        print("\nBinary files found:", len(self.binary_files))
         print("\n".join(self.binary_files))
         
         print("\nSmallest text file contents:")
         print(self.smallest_text_file_contents)
         
         print("\nLargest text file size:")
-        print(self.largest_text_file_size)
+        print(self.largest_text_file_size, "Characters")
         
         print("\nSmallest binary file size:")
-        print(self.smallest_binary_file_size)
+        print(self.smallest_binary_file_size, "Bytes")
         
         print("\nLargest binary file size:")
-        print(self.largest_binary_file_size)
+        print(self.largest_binary_file_size, "Bytes")
         
         print("\nNumber of invalid references:")
-        print(self.num_invalid_references)
+        print(self.invalid_references)
         
         print("\nExternal servers:")
         for server, status in self.external_servers.items():
@@ -73,14 +73,14 @@ class GopherCrawler:
         port = res['port']
         if res_type == '3':
             return
-
+        
         # first check if the resource is an external server
         # update the dict and do not crawl this resource 
-        if (host != 'comp3310.ddns.net' or port != '70'):
+        if ((host != 'comp3310.ddns.net' or port != '70') and host != 'invalid'):
                 if (host, port) not in self.external_servers:
                     self.external_servers[(host, port)] = check_external_server(host, int(port))
                 return
-        # return before making another request
+        # check whether this directory has been searched 
         if (res_type == '1') and (selector in self.visited_dirs) or selector == '':
             return
         sock = send_request(selector, self.hostname, self.portno)
@@ -94,6 +94,7 @@ class GopherCrawler:
         # txt file 
         if res_type == '0':
             self.text_files.append(selector)
+            # Maximum file name for downloading a file is 30 chars 
             trim_selector = selector[:30] if len(selector) > 30 else selector
             basename = os.path.basename(trim_selector)
             if not basename.endswith('.txt'):
@@ -104,7 +105,7 @@ class GopherCrawler:
             if not self.smallest_text_file_contents or len(response) < len(self.smallest_text_file_contents):
                 self.smallest_text_file_contents = response
             # Update largest text file 
-            if len(response) > self.largest_text_file_size:
+            if not self.largest_text_file_size or len(response) > self.largest_text_file_size:
                 self.largest_text_file_size = len(response)
 
 
@@ -114,10 +115,13 @@ class GopherCrawler:
             self.visited_dirs.append(selector)
             response_resources = get_resources(response)
             if not response_resources or response_resources == []:
-                print('Empty dir') #TODO remove
                 return
             # recursively crawl every resource in directory
             for resource in response_resources:
+                # if there is an error in the resource, the current selector 
+                # is invalid
+                if resource['type'] == '3':
+                    self.invalid_references.add(selector)
                 self.crawl_resource(resource)
             
         # binary file case
@@ -132,6 +136,7 @@ class GopherCrawler:
                 self.smallest_binary_file_size = len(response)
             self.largest_binary_file_size = max(self.largest_binary_file_size, len(response))
             self.smallest_binary_file_size = min(self.smallest_binary_file_size, len(response))
+        
             
         else: print("different type of resource")
 

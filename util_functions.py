@@ -54,11 +54,12 @@ def read_response(sock, is_binary):
             return in_data
         txt = in_data.decode('utf-8', 'backslashreplace')
         return remove_terminator(txt)
-    except Exception as e:
-        if e == timeout:
-            print("Socket operation timed out")
+    except timeout:
+        print("Socket operation timed out")
         sock.close()
         return None
+    except Exception as e:
+        print("Error reading data", e)
     
 def write_file(path, content, is_binary):
     try:
@@ -118,10 +119,6 @@ def get_resources(txt):
                 'port': values[3]
             }
             result.append(current)
-        # if(res.startswith('3')):
-        #     current = {
-                
-        #     }
 
     return result
 
