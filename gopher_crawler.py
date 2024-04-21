@@ -7,6 +7,9 @@ import os
 
 
 class GopherCrawler:
+    """
+    Class designed to store important stats relating to the gopher server
+    """
     def __init__(self, hostname, portno):
         self.hostname = hostname
         self.portno = portno
@@ -20,7 +23,6 @@ class GopherCrawler:
         self.invalid_references = set() # Set
         self.external_servers = {}  # {(host, port) : up_status}
         self.error_references = [] # (reference, error)
-
         self.visited_dirs = [] # keep track of which directories have been visited 
 
     # Other methods and attributes...
@@ -64,13 +66,19 @@ class GopherCrawler:
     
    
     
-    # don't wanna follow a direcotry unless it is a new request 
+
     def crawl_resource(self, res):
-        # Recursive Base cases
+        """
+        Recursive function that will crawl every resource 
+        on the server and update class fields accordingly. 
+        Param res: the resource map to crawl 
+        """
+        # extract map values
         res_type = res['type']
         selector = res['selector']
         host = res['host']
         port = res['port']
+        # already have recorded invalid references before recursive call
         if res_type == '3':
             return
         
@@ -80,9 +88,11 @@ class GopherCrawler:
                 if (host, port) not in self.external_servers:
                     self.external_servers[(host, port)] = check_external_server(host, int(port))
                 return
-        # check whether this directory has been searched 
+        # Return if we have already seen this directory or initial request
         if (res_type == '1') and (selector in self.visited_dirs) or selector == '':
             return
+        
+        # get the resource 
         sock = send_request(selector, self.hostname, self.portno)
         is_bin = res_type == '9'
         response = read_response(sock, is_bin)
@@ -96,10 +106,12 @@ class GopherCrawler:
             self.text_files.append(selector)
             # Maximum file name for downloading a file is 30 chars 
             trim_selector = selector[:30] if len(selector) > 30 else selector
+            # create download path
             basename = os.path.basename(trim_selector)
             if not basename.endswith('.txt'):
                 basename += '.txt'
             path = os.path.join('output', 'text', basename)
+            # download the file 
             write_file(path, response, False)
             # Update smallest text file 
             if not self.smallest_text_file_contents or len(response) < len(self.smallest_text_file_contents):
@@ -110,7 +122,6 @@ class GopherCrawler:
 
 
         # directory case 
-        # TODO fix error case
         elif res_type == '1':
             self.visited_dirs.append(selector)
             response_resources = get_resources(response)
@@ -129,6 +140,7 @@ class GopherCrawler:
             self.binary_files.append(selector)
             basename = os.path.basename(selector)
             path = os.path.join('output', 'bin', basename)
+            # download file 
             write_file(path, response, True)
             if self.largest_binary_file_size == None:
                 self.largest_binary_file_size = len(response)

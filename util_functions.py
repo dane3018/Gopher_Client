@@ -10,6 +10,9 @@ timeout_value = 5 #change timout of sock operations here
 # Sock Line functions 
 
 def send_request(req, host_name, portno):
+    """
+    Send request 'req' using socket to host_name and portno
+    """
     sock = socket(AF_INET, SOCK_STREAM)
     sock.settimeout(timeout_value)
     sock.connect((host_name, portno))
@@ -20,11 +23,9 @@ def send_request(req, host_name, portno):
 
 def read_response(sock, is_binary):
     """
-    Read single line terminated by \r\n from sock, or None if closed.
-    Param is_binary: boolean
-        variable to check whether the response will be a binary file
-        if so, do not want to check for new line, period, new line pattern
-    
+    Read a response terminated by '\r\n.\r\n' from sock, or until EOF reached 
+    for binary files. Return the response as a text or bytes for binary files.
+    return None if socket operation fails. 
     """
     # Read as bytes. Only convert to UTF-8 when we have entire line.
     sock.settimeout(timeout_value)
@@ -54,14 +55,20 @@ def read_response(sock, is_binary):
             return in_data
         txt = in_data.decode('utf-8', 'backslashreplace')
         return remove_terminator(txt)
+    # socket.timeout occurred
     except timeout:
         print("Socket operation timed out")
         sock.close()
         return None
     except Exception as e:
         print("Error reading data", e)
+        sock.close()
+        return None
     
 def write_file(path, content, is_binary):
+    """
+    Writes the contents of 'content' to the file at 'path'
+    """
     try:
         flag = 'wb+' if is_binary else 'w+'
         with open(path, flag) as file:
@@ -91,11 +98,10 @@ def log_request(request):
     print('Sending request:', '"'+request+'"', 'at time:', timestamp)
 
 
-# general functions 
 def get_resources(txt):
     """
     Takes a response string and converts it into a dictionary 
-    with its key fields or None if 
+    with its key fields or None if data is malformed 
     """
     if not txt:
         return None
@@ -128,6 +134,10 @@ def get_resources(txt):
 
 
 def check_external_server(host_name, portno):
+        """
+        Opens a socket with host_name and portno and 
+        attempts to connect. If successful will return True
+        """
         server_up = False
         try:
             sock = socket(AF_INET, SOCK_STREAM)

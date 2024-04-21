@@ -29,18 +29,19 @@ def main():
     try:
         # Connect to the server
         
-        # Send a request
+        # Send initial request
         selector = ""  # Example selector
         sock = send_request(selector, host_name, portno)
         
-        # Receive and print the response
         response = read_response(sock, False)
 
-        # resources will be a list of dictionaries
+        # get each resources as a dictionary
         resources = get_resources(response)
 
+        # Crawl each resource and update object fields
         for res in resources:
             crawler.crawl_resource(res)
+        # Print all stats recorded from the server
         crawler.print_stats()
 
 
