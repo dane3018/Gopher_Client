@@ -22,7 +22,7 @@ The client will create an output directory to store all files downloaded from th
 
 ## Clarifications
 ### Timeout  
-A timeout value of 5 seconds is set for all socket operations. This also means that if the server is continuously sending data for longer than 5 seconds, the client will stop receiving data and disregard the previously sent data. While 5 seconds is somewhat arbitrary, this was decided so that the crawling did not take too long and most servers should respons within 5 seconds. This value can be changed easily in the global variable timeout_value in util_functions
+A timeout value of 5 seconds is set for all socket operations. This also means that if the server is continuously sending data for longer than 5 seconds, the client will stop receiving data and disregard the previously sent data. While 5 seconds is somewhat arbitrary, this was decided so that the crawling did not take too long. Most servers should respons within 5 seconds. This value can be changed easily in the global variable timeout_value in util_functions
 
 ### Error and invalid references 
 If any error occurs during the reading of a response from a server such as a timeout, this reference will be added to the list of error references. 

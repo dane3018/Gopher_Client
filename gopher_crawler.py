@@ -48,14 +48,14 @@ class GopherCrawler:
         print("\nLargest binary file size:")
         print(self.largest_binary_file_size, "Bytes")
         
-        print("\nNumber of invalid references:")
+        print("\nNumber of invalid references:", len(self.invalid_references))
         print(self.invalid_references)
         
-        print("\nExternal servers:")
+        print("\nExternal servers:", len(self.external_servers))
         for server, status in self.external_servers.items():
             print(f"{server}: {'up' if status else 'down'}")
         
-        print("\nError references:")
+        print("\nError references:", len(self.error_references))
         print("\n".join(self.error_references))
 
 

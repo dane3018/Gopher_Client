@@ -11,7 +11,8 @@ timeout_value = 5 #change timout of sock operations here
 
 def send_request(req, host_name, portno):
     """
-    Send request 'req' using socket to host_name and portno
+    Send request 'req' using socket to host_name and portno.
+    Returns the socket created for the request
     """
     sock = socket(AF_INET, SOCK_STREAM)
     sock.settimeout(timeout_value)
@@ -62,7 +63,6 @@ def read_response(sock, is_binary):
         return None
     except Exception as e:
         print("Error reading data", e)
-        sock.close()
         return None
     
 def write_file(path, content, is_binary):
@@ -86,10 +86,6 @@ def remove_terminator(txt):
     if txt.endswith(suffix):
         return txt[:-len(suffix)]
     return txt
-
-
-
-
 
 
 # used for every request to the server

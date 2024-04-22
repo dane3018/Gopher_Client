@@ -4,9 +4,6 @@ from util_functions import send_request, read_response, get_resources
 from gopher_crawler import GopherCrawler
 import os
 
-
-
-
 def main():
     # Define the server address and port
 
@@ -27,8 +24,6 @@ def main():
     bin_dir = os.path.join(base_dir, "bin")
     os.makedirs(bin_dir, exist_ok=True)
     try:
-        # Connect to the server
-        
         # Send initial request
         selector = ""  # Example selector
         sock = send_request(selector, host_name, portno)
@@ -44,12 +39,10 @@ def main():
         # Print all stats recorded from the server
         crawler.print_stats()
 
+    except Exception as e:
+        print('gopher client error:')
+        raise e
 
-    # except Exception as e:
-    #     print("Error:", e)
-    finally:
-        # Close the socket
-        sock.close()
 
 if __name__ == "__main__":
     main()
