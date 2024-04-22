@@ -1,14 +1,21 @@
 # Gopher Client
+UID: u7282852
+
+Name: Dane Osborne
 
 ## Wireshark initial request/response
 ![Wireshark](./Wireshark.png)
 
 ## Run the script 
-    python gopher_client.py
+
+    python gopher_client.py [host] [port]
 or
 
-    python3 gopher_client.py
+    python3 gopher_client.py [host] [port]
 
+By default the client will connect to host:"comp3310.ddns.net" port:70 if no arguments are given
+
+To run the client against a different server 
 ## Files and Directories 
 gopher_client.py: main function, run this file to run the client
 

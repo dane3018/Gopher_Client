@@ -3,13 +3,14 @@ from socket import *
 from util_functions import send_request, read_response, get_resources
 from gopher_crawler import GopherCrawler
 import os
+import sys
 
-def main():
+def main(host, port):
     # Define the server address and port
 
     # set a timeout of 5 seconds on socket operations 
-    host_name = "comp3310.ddns.net"
-    portno = 70
+    host_name = "comp3310.ddns.net" if host is None else host
+    portno = 70 if port is None else port
     
     crawler = GopherCrawler(hostname=host_name, portno=portno)
     # ensure ouput directories exist
@@ -45,4 +46,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 3:
+        print("Usage: python gopher_client.py [hostname] [port]")
+        sys.exit(1)
+    host = sys.argv[1] if len(sys.argv) >= 2 else None
+    port = int(sys.argv[2]) if len(sys.argv) >= 3 else None
+    main(host, port)
