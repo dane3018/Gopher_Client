@@ -1,7 +1,3 @@
-"""
-Class to store all fields associated with the assignment specs
-and methods to update these values
-"""
 from util_functions import send_request, read_response, get_resources, check_external_server, write_file
 import os
 
@@ -20,9 +16,9 @@ class GopherCrawler:
         self.largest_text_file_size = None
         self.smallest_binary_file_size = None
         self.largest_binary_file_size = None
-        self.invalid_references = set() # Set
+        self.invalid_references = []
         self.external_servers = {}  # {(host, port) : up_status}
-        self.error_references = [] # (reference, error)
+        self.error_references = [] # store any references that do not give response
         self.visited_dirs = [] # keep track of which directories have been visited 
 
     # Other methods and attributes...
@@ -62,10 +58,6 @@ class GopherCrawler:
         print("\nError references:")
         print("\n".join(self.error_references))
 
-
-    
-   
-    
 
     def crawl_resource(self, res):
         """
@@ -121,7 +113,7 @@ class GopherCrawler:
                 self.largest_text_file_size = len(response)
 
 
-        # directory case 
+        # directory case add
         elif res_type == '1':
             self.visited_dirs.append(selector)
             response_resources = get_resources(response)
@@ -132,7 +124,7 @@ class GopherCrawler:
                 # if there is an error in the resource, the current selector 
                 # is invalid
                 if resource['type'] == '3':
-                    self.invalid_references.add(selector)
+                    self.invalid_references.append(selector)
                 self.crawl_resource(resource)
             
         # binary file case
